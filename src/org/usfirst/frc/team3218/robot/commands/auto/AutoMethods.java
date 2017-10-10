@@ -28,6 +28,10 @@ public class AutoMethods
 	//boiler values require testing
 	static final double BOILER_TURN = SIDE_INITIAL_TURN - 11.68 * TICKS_PER_INCH;
 	static final double FINAL_BOILER_DRIVE = 104 * TICKS_PER_INCH;
+	
+	/**
+	 * normalizes the encoder values
+	 */
 	public static void calculateRate()
 	{
 		//leftRate = Math.abs(Robot.driveTrain.leftEncoder.getRate());
@@ -43,13 +47,18 @@ public class AutoMethods
 		
 	}
 	
+	/**
+	 * drives the robot straight either forward or backwards
+	 * @param distance: the distance in encoder ticks to travel
+	 * @param power: the power at which to drive where -1.0 is full speed backwards and 1.0 is full speed forwards
+	 * @return returns true if the robot has driven the distance in ticks, false otherwise
+	 */
 	public static boolean driveStraight(double distance, double power)
 	{
 		boolean x = false;
 		straightPower = power;
 		
-		if(Math.abs(Robot.driveTrain.leftEncoder.get()) < distance 
-				&& Math.abs(Robot.driveTrain.rightEncoder.get()) < distance)
+		if((Math.abs(Robot.driveTrain.leftEncoder.get()) < distance) && (Math.abs(Robot.driveTrain.rightEncoder.get()) < distance))
 		{
 			if(Robot.auto)
 			{
@@ -76,7 +85,7 @@ public class AutoMethods
 				{
 					Robot.driveTrain.autoDrive(power, adjustmentPower);
 				}
-			} // if robot.auto
+			}
 			else
 			{
 				Robot.driveTrain.drive(0, 0);
@@ -90,16 +99,22 @@ public class AutoMethods
 		}
 		
 		return x;
-
-
 	}
 	
+	/**
+	 * resets the encoder values
+	 */
 	public static void resetEncoders()
 	{
 		Robot.driveTrain.leftEncoder.reset();
 		Robot.driveTrain.rightEncoder.reset();
 	}
 	
+	/**
+	 * turns the robot left
+	 * @param distance: the distance in ticks to turn
+	 * @param power: the power to turn at where -1.0 is full speed right and 1.0 is full speed left
+	 */
 	public static void turnLeft(double distance, double power)
 	{
 		while(Math.abs(Robot.driveTrain.rightEncoder.get()) < distance)
@@ -118,6 +133,11 @@ public class AutoMethods
 		resetEncoders();
 	}
 	
+	/**
+	 * turns the robot right
+	 * @param distance: the distance in ticks to turn
+	 * @param power: the power to turn at where -1.0 is full speed left and 1.0 is full speed right
+	 */
 	public static void turnRight(double distance, double power)
 	{
 		while(Math.abs(Robot.driveTrain.leftEncoder.get()) < distance)
