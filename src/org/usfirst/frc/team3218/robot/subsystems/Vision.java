@@ -42,7 +42,7 @@ public class Vision extends Subsystem {
 		
 	}
 	
-	public void setExposure(int brightness){
+	public void setBrightness(int brightness){
 	
 		pixyi2c.writeBulk((byte) 0xFE, 0x00, (byte) brightness);
 		
