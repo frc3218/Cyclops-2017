@@ -23,6 +23,7 @@ public class Vision extends Subsystem {
 	public float[] AverageHeight = new float[I2CPixy.MAX_SIGNATURES];
 	public float[] AverageWidth = new float[I2CPixy.MAX_SIGNATURES];
 	public boolean[] wasUpdated = new boolean[I2CPixy.MAX_SIGNATURES];
+	private byte[] BrightnessArray = new byte[] {(byte) 0xFE, 0x00, 0x64};
 	public I2C pixyi2c = new I2C(I2C.Port.kOnboard, 0x54);
 	public SPI pixySPI = new SPI(SPI.Port.kOnboardCS0);
 	public int tapeMinX = 130;
@@ -43,8 +44,9 @@ public class Vision extends Subsystem {
 	}
 	
 	public void setBrightness(int brightness){
-	
-		pixyi2c.writeBulk((byte) 0xFE, 0x00, (byte) brightness);
+		
+		BrightnessArray[2] = (byte) brightness;
+		pixyi2c.writeBulk(BrightnessArray);
 		
 	}
 
