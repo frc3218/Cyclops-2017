@@ -41,6 +41,12 @@ public class Vision extends Subsystem {
 	//	lightSpike.set(Value.kOff);
 		
 	}
+	
+	public void setExposure(int brightness){
+	
+		pixyi2c.writeBulk((byte) 0xFE, 0x00, (byte) brightness);
+		
+	}
 
     public void initDefaultCommand() {
     	
