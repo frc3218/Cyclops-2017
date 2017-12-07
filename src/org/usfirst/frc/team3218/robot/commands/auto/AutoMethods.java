@@ -30,20 +30,14 @@ public class AutoMethods
 	static final double FINAL_BOILER_DRIVE = 104 * TICKS_PER_INCH;
 	
 	/**
-	 * normalizes the encoder values
+	 * normalizes the encoder values calculates adjustment power for the side that is behind
 	 */
 	public static void calculateRate()
 	{
-		//leftRate = Math.abs(Robot.driveTrain.leftEncoder.getRate());
-		//rightRate = Math.abs(Robot.driveTrain.rightEncoder.getRate());
-		
-		//adjustmentPower = (rightRate - leftRate) / RATE_DIVISOR; // divides the right encoder rate - left encoder rate by the RATE_DIVISOR
+	
 		leftEncoderValue = Math.abs(Robot.driveTrain.leftEncoder.get());
 		rightEncoderValue = Math.abs(Robot.driveTrain.rightEncoder.get());
-		
 		adjustmentPower = (leftEncoderValue - rightEncoderValue) / RATE_DIVISOR;
-		
-	//	adjustmentPower *= Math.abs(straightPower) / straightPower;
 		
 	}
 	
@@ -112,7 +106,7 @@ public class AutoMethods
 	
 	/**
 	 * turns the robot left
-	 * @param distance: the distance in ticks to turn
+	 * @param distance: the distance in ticks for the right wheels to turn
 	 * @param power: the power to turn at where -1.0 is full speed right and 1.0 is full speed left
 	 */
 	public static void turnLeft(double distance, double power)
@@ -135,7 +129,7 @@ public class AutoMethods
 	
 	/**
 	 * turns the robot right
-	 * @param distance: the distance in ticks to turn
+	 * @param distance: the distance in ticks for the left wheels to turn
 	 * @param power: the power to turn at where -1.0 is full speed left and 1.0 is full speed right
 	 */
 	public static void turnRight(double distance, double power)
