@@ -23,6 +23,8 @@ public class I2CPixy extends Command {
 	char currentWidth;
 	char currentHeight;
 	
+	//start of object sync: 0xaa55
+	
 	//boolean[] wasUpdated = new boolean[MAX_SIGNATURES];
 	
 	float[] averageX = new float[MAX_SIGNATURES];
@@ -59,10 +61,7 @@ public class I2CPixy extends Command {
     		Robot.vision.wasUpdated[i]=false;
     	}
     	int i = 0;
-    	
-    	//(int j =0;j<pixyValues.length;j++){
-    	
-    //	}
+    
     	if(pixyValues!=null){
     		
     	while(littleEndianToBigEndian(pixyValues[i],pixyValues[i+1])!=0xaa55)
@@ -75,50 +74,48 @@ public class I2CPixy extends Command {
     		}
     	}
     	i+=2;
+	
+	//if there is room for an object's data in the array and an object is found
     	if(i<maxBytes-14 && littleEndianToBigEndian(pixyValues[i],pixyValues[i+1])==0xaa55)
     	{
-    		
+    		//segments chunks of object Data
     		for(;i < pixyValues.length-14; i+=14)	
     		{
-    			if(((pixyValues[i+1] & 0xff)<<8 | (pixyValues[i] & 0xff)) == 0xaa55  ) //check for start of object (sync: 0xaa55)
+			//checks for beginning of object
+    			if(littleEndianToBigEndian(pixyValues[i],pixyValues[i+1]) == 0xaa55)  
     			{
     				//sets all variables for current object in for loop
-    				currentChecksum = /*littleEndianToBigEndian(pixyValues[i + 2],pixyValues[i + 3])*/(char) (((pixyValues[i + 3] & 0xff) << 8) | (pixyValues[i + 2] & 0xff));
-    				currentSig = /*littleEndianToBigEndian(pixyValues[i + 2],pixyValues[i + 3])*/(char) (((pixyValues[i + 5] & 0xff) << 8) | (pixyValues[i + 4] & 0xff));
-    				currentX = /*littleEndianToBigEndian(pixyValues[i + 2],pixyValues[i + 3])*/(char) (((pixyValues[i + 7] & 0xff) << 8) | (pixyValues[i + 6] & 0xff));
-    				currentY = /*littleEndianToBigEndian(pixyValues[i + 2],pixyValues[i + 3])*/(char) (((pixyValues[i + 9] & 0xff) << 8) | (pixyValues[i + 8] & 0xff));
-    				currentWidth = /*littleEndianToBigEndian(pixyValues[i + 2],pixyValues[i + 3])*/(char) (((pixyValues[i + 11] & 0xff) << 8) | (pixyValues[i + 10] & 0xff)); 
-    				currentHeight = /*littleEndianToBigEndian(pixyValues[i + 2],pixyValues[i + 3])*/(char) (((pixyValues[i + 13] & 0xff) << 8) | (pixyValues[i + 12] & 0xff));
+    				currentChecksum = littleEndianToBigEndian(pixyValues[i + 2],pixyValues[i + 3]);
+    				currentSig = littleEndianToBigEndian(pixyValues[i + 4],pixyValues[i + 5]);
+    				currentX = littleEndianToBigEndian(pixyValues[i + 6],pixyValues[i + 7]);
+    				currentY = littleEndianToBigEndian(pixyValues[i + 8],pixyValues[i + 9]);
+    				currentWidth = littleEndianToBigEndian(pixyValues[i + 10],pixyValues[i + 11]); 
+    				currentHeight = littleEndianToBigEndian(pixyValues[i + 12],pixyValues[i + 13]);
     				
+				//checksum for one object
     				if( currentChecksum == (currentSig + currentX + currentY + currentWidth + currentHeight) && (currentChecksum > 0 )){//make sure data is good		
-    				   	SmartDashboard.putNumber("sig" , currentSig);
-    			    /*
-    				   	SmartDashboard.putNumber("byte 0", pixyValues[0]);
-    			    	SmartDashboard.putNumber("byte 1", pixyValues[1]);
-    			    	SmartDashboard.putNumber("byte 2", pixyValues[2]);
-    			    	SmartDashboard.putNumber("sync", littleEndianToBigEndian(pixyValues[0],pixyValues[1]));
-    			    	*/
-    				   	int tempInt = currentSig;
-    				   			
-    				   	SmartDashboard.putNumber("X" +tempInt, averageX[currentSig]);
-    			    	SmartDashboard.putNumber("Y" +tempInt, averageY[currentSig]);
-    			    	SmartDashboard.putNumber("Width"+tempInt, averageWidth[currentSig]);
-    			    	SmartDashboard.putNumber("Height"+tempInt, averageHeight[currentSig]);
+    				
+    					int tempInt = currentSig;
+					
+    					SmartDashboard.putNumber("sig" , currentSig);   			
+    					SmartDashboard.putNumber("X" +tempInt, averageX[currentSig]);
+    			    		SmartDashboard.putNumber("Y" +tempInt, averageY[currentSig]);
+    			    		SmartDashboard.putNumber("Width"+tempInt, averageWidth[currentSig]);
+    			    		SmartDashboard.putNumber("Height"+tempInt, averageHeight[currentSig]);
     					
     					calculateAverage(currentSig, currentX, currentY, currentWidth, currentHeight); 
     					
     				}//checksum if close				
-    			}//object if close
+    			}//check for object and succesful parse if close
+    		}//for loop that segments object data close
+    	}//
     		}
-    	}
- 
-    		}
-    		//System.out.println("I2CPixy out" + System.currentTimeMillis());
     }//execute close
 
     private char littleEndianToBigEndian(byte one, byte two)
     {
     	return (char) (((two & 0xff) << 8) | (one & 0xff)); 
+	    
     }
     
 	protected void calculateAverage(char sig, char X, char Y, char Width, char Height) //TODO: make this work with different length arrays
