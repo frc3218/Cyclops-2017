@@ -12,7 +12,7 @@ public class AutoMethods
 	static int leftEncoderValue;
 	static int rightEncoderValue;
 	
-	static final double RATE_DIVISOR = 100; //300; // normalizes encoder rate values
+	static final double RATE_DIVISOR = 100; // normalizes encoder rate values
 	
 	static double straightPower;
 	static double rateDifference;
