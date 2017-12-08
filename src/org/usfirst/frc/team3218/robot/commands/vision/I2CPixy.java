@@ -53,26 +53,31 @@ public class I2CPixy extends Command {
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
     	
-    	//System.out.println("I2CPixy in" + System.currentTimeMillis());
     	byte[] pixyValues = new byte[maxBytes];
     	Robot.vision.pixyi2c.readOnly(pixyValues, maxBytes);
-    	for(int i = 0; i<Robot.vision.wasUpdated.length; i++) // set was updated array to false. 
+	
+	// set was updated array to false.
+    	for(int i = 0; i<Robot.vision.wasUpdated.length; i++)  
     	{
     		Robot.vision.wasUpdated[i]=false;
     	}
     	int i = 0;
     
-    	if(pixyValues!=null){
-    		
-    	while(littleEndianToBigEndian(pixyValues[i],pixyValues[i+1])!=0xaa55)
-    	{
-    		i++;
-    	
-    		if (i>maxBytes-2)
+	//checks if data has been put into storage array
+    	if(pixyValues!=null)
+	{
+    		//search through data array to find object
+    		while(littleEndianToBigEndian(pixyValues[i],pixyValues[i+1])!=0xaa55)
     		{
-    			break;
-    		}
+    			i++;
+    			
+			//if no object is found within the data exit the loop
+    			if (i>maxBytes-2)
+    			{
+    				break;
+    			}
     	}
+	
     	i+=2;
 	
 	//if there is room for an object's data in the array and an object is found
