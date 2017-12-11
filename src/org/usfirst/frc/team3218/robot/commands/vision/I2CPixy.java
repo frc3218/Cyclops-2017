@@ -113,9 +113,9 @@ public class I2CPixy extends Command {
     				}//checksum if close				
     			}//check for object and succesful parse if close
     		}//for loop that segments object data close
-    	}//
-    		}
-    }//execute close
+    	}//if that checks for object in data close
+    }//if the array has any data check close
+  }//execute close
 
     private char littleEndianToBigEndian(byte one, byte two)
     {
