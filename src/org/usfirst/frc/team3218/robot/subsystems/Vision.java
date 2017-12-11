@@ -43,9 +43,15 @@ public class Vision extends Subsystem {
 		
 	}
 	
-	public void setBrightness(int brightness){
-		//changebrightness type
-		BrightnessArray[2] = (byte) brightness;
+	public void setBrightness(byte brightness){
+		if(brightness < 0){
+		brightness = 0;
+		}
+		else if(brightness > 255){
+		brightness = 255;
+		}
+		
+		BrightnessArray[2] = brightness;
 		pixyi2c.writeBulk(BrightnessArray);
 		
 	}
