@@ -48,7 +48,7 @@ public class Vision extends Subsystem {
 		brightness = 0;
 		}
 		else if(brightness > 255){
-		brightness = 255;
+		brightness = (byte) 255;
 		}
 		
 		BrightnessArray[2] = brightness;
