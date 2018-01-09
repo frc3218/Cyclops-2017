@@ -1,6 +1,7 @@
 package org.usfirst.frc.team3218.robot.commands.vision;
 
 import org.usfirst.frc.team3218.robot.Robot;
+import org.usfirst.frc.team3218.robot.subsystems.Blob;
 
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -11,10 +12,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class I2CPixy extends Command {
 
 	public static final int MAX_SIGNATURES = 3; //TODO: make constants final
-	final int MAX_OBJECTS = 4;
-	int sampleCount = 10;
+	public static final int MAX_OBJECTS = 4;
+	public static final int SAMPLE_COUNT = 10;
 	int maxBytes = 14 * MAX_OBJECTS + 2;
-	int[] lastIndex = new int[MAX_SIGNATURES];
 	
 	char currentChecksum;
 	char currentSig;
@@ -27,16 +27,10 @@ public class I2CPixy extends Command {
 	
 	//boolean[] wasUpdated = new boolean[MAX_SIGNATURES];
 	
-	float[] averageX = new float[MAX_SIGNATURES];
-	float[] averageY = new float[MAX_SIGNATURES];
-	float[] averageWidth = new float[MAX_SIGNATURES];
-	float[] averageHeight = new float[MAX_SIGNATURES];
 	
 	//[signature] [sampleCount]
-	char[][] xSamplerArray = new char[MAX_SIGNATURES][sampleCount];
-	char[][] ySamplerArray = new char[MAX_SIGNATURES][sampleCount];
-	char[][] widthSamplerArray = new char[MAX_SIGNATURES][sampleCount];
-	char[][] heightSamplerArray = new char[MAX_SIGNATURES][sampleCount];
+	Blob blob = new Blob();
+	public Blob[] blobArray = new Blob[MAX_SIGNATURES];
 	
     public I2CPixy() {
         // Use requires() here to declare subsystem dependencies
@@ -59,7 +53,7 @@ public class I2CPixy extends Command {
 	// set was updated array to false.
     	for(int i = 0; i<Robot.vision.wasUpdated.length; i++)  
     	{
-    		Robot.vision.wasUpdated[i]=false;
+    		blobArray[i].wasUpdated=false;
     	}
     	int i = 0;
     
@@ -101,14 +95,13 @@ public class I2CPixy extends Command {
     				if( currentChecksum == (currentSig + currentX + currentY + currentWidth + currentHeight) && (currentChecksum > 0 )){//make sure data is good		
     				
     					int tempInt = currentSig;
-					
     					SmartDashboard.putNumber("sig" , currentSig);   			
-    					SmartDashboard.putNumber("X" +tempInt, averageX[currentSig]);
-    			    		SmartDashboard.putNumber("Y" +tempInt, averageY[currentSig]);
-    			    		SmartDashboard.putNumber("Width"+tempInt, averageWidth[currentSig]);
-    			    		SmartDashboard.putNumber("Height"+tempInt, averageHeight[currentSig]);
+    					SmartDashboard.putNumber("X" +tempInt, blobArray[currentSig].averageX);
+    			    	SmartDashboard.putNumber("Y" +tempInt, blobArray[currentSig].averageY);
+    			    	SmartDashboard.putNumber("Width"+tempInt, blobArray[currentSig].averageWidth);
+    			    	SmartDashboard.putNumber("Height"+tempInt, blobArray[currentSig].averageHeight);
     					
-    					calculateAverage(currentSig, currentX, currentY, currentWidth, currentHeight); 
+    					calculateAverage(currentX, currentY, currentWidth, currentHeight, blobArray[currentSig]);
     					
     				}//checksum if close				
     			}//check for object and succesful parse if close
@@ -117,43 +110,44 @@ public class I2CPixy extends Command {
     }//if the array has any data check close
   }//execute close
 
+	/**
+	 * this will calculate the average location & size over time of previous blob samples
+	 * @param X: the horizontal position of the blob
+	 * @param Y: the vertical position of the blob
+	 * @param Width: the width of the blob
+	 * @param Height: the height of the blob
+	 */
+	public void calculateAverage(char X, char Y, char Width, char Height, Blob blob) 
+	{
+		blob.lastIndex = ((blob.lastIndex+1) >= I2CPixy.SAMPLE_COUNT) ? 0 : blob.lastIndex + 1;
+		SmartDashboard.putNumber("lastIndex",blob.lastIndex);
+		//x position average
+		blob.averageX += (float)X/I2CPixy.SAMPLE_COUNT;
+		blob.averageX -= (float)blob.xSamples[blob.lastIndex]/I2CPixy.SAMPLE_COUNT;
+		blob.xSamples[blob.lastIndex] = X;
+	
+		//y position average
+		blob.averageY += (float)Y/I2CPixy.SAMPLE_COUNT;
+		blob.averageY -= (float)blob.ySamples[blob.lastIndex]/I2CPixy.SAMPLE_COUNT;
+		blob.ySamples[blob.lastIndex] = Y;
+		
+		//height average
+		blob.averageHeight += (float)Height/I2CPixy.SAMPLE_COUNT;
+		blob.averageHeight -= (float)blob.heightSamples[blob.lastIndex]/I2CPixy.SAMPLE_COUNT;
+		blob.heightSamples[blob.lastIndex] = Height;
+		
+		//width average
+		blob.averageWidth += (float)Width/I2CPixy.SAMPLE_COUNT;
+		blob.averageWidth -= (float)blob.widthSamples[blob.lastIndex]/I2CPixy.SAMPLE_COUNT;
+		blob.widthSamples[blob.lastIndex] = Width;
+		blob.wasUpdated = true;		
+	}
     private char littleEndianToBigEndian(byte one, byte two)
     {
     	return (char) (((two & 0xff) << 8) | (one & 0xff)); 
 	    
     }
     
-	protected void calculateAverage(char sig, char X, char Y, char Width, char Height) //TODO: make this work with different length arrays
-	{
-		
-		lastIndex[sig] = ((lastIndex[sig]+1) >= sampleCount) ? 0 : lastIndex[sig]+1;
-		SmartDashboard.putNumber("lastIndex",lastIndex[sig]);
-		//x position average
-		averageX[sig] += (float)X/sampleCount;
-		averageX[sig] -= (float)xSamplerArray[sig][lastIndex[sig]]/sampleCount;
-		xSamplerArray[sig][lastIndex[sig]] = X;
-		Robot.vision.AverageX[sig]=averageX[sig];
-	
-		//y position average
-		averageY[sig] += (float)Y/sampleCount;
-		averageY[sig] -= (float)ySamplerArray[sig][lastIndex[sig]]/sampleCount;
-		ySamplerArray[sig][lastIndex[sig]] = Y;
-		Robot.vision.AverageY[sig]=averageY[sig];
-		
-		//height average
-		averageHeight[sig] += (float)Height/sampleCount;
-		averageHeight[sig] -= (float)heightSamplerArray[sig][lastIndex[sig]]/sampleCount;
-		heightSamplerArray[sig][lastIndex[sig]] = Height;
-		Robot.vision.AverageHeight[sig]=averageHeight[sig];
-		
-		//width average
-		averageWidth[sig] += (float)Width/sampleCount;
-		averageWidth[sig] -= (float)widthSamplerArray[sig][lastIndex[sig]]/sampleCount;
-		widthSamplerArray[sig][lastIndex[sig]] = Width;
-		Robot.vision.AverageWidth[sig]=averageWidth[sig];
-		Robot.vision.wasUpdated[sig] = true;
-		
-	}
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
         return false;
