@@ -18,7 +18,7 @@ import org.usfirst.frc.team3218.robot.commands.auto.Right;
 import org.usfirst.frc.team3218.robot.commands.ballejection.StartBallEjection;
 import org.usfirst.frc.team3218.robot.commands.gear.GearArmControl;
 import org.usfirst.frc.team3218.robot.commands.gear.GearCollectionGrab;
-import org.usfirst.frc.team3218.robot.commands.vision.I2CPixy;
+import org.usfirst.frc.team3218.robot.commands.vision.Pixy;
 import org.usfirst.frc.team3218.robot.subsystems.BallCollection;
 import org.usfirst.frc.team3218.robot.subsystems.BallEjection;
 import org.usfirst.frc.team3218.robot.subsystems.Climbing;
@@ -141,7 +141,7 @@ public class Robot extends IterativeRobot {
 
 		if (autonomousCommand != null)
 			autonomousCommand.start();
-		new I2CPixy().start();
+		new Pixy().start();
 	}
 
 	/**

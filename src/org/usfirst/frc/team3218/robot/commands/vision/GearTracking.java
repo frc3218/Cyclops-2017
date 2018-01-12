@@ -5,7 +5,7 @@ import org.usfirst.frc.team3218.robot.Robot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import org.usfirst.frc.team3218.robot.commands.vision.I2CPixy;
+import org.usfirst.frc.team3218.robot.commands.vision.Pixy;
 
 /**
  *

@@ -25,7 +25,7 @@ import org.usfirst.frc.team3218.robot.commands.gear.GearCollectionStop;
 import org.usfirst.frc.team3218.robot.commands.gearshift.testDown;
 import org.usfirst.frc.team3218.robot.commands.gearshift.testUp;
 import org.usfirst.frc.team3218.robot.commands.vision.GearTracking;
-import org.usfirst.frc.team3218.robot.commands.vision.I2CPixy;
+import org.usfirst.frc.team3218.robot.commands.vision.Pixy;
 import org.usfirst.frc.team3218.robot.commands.vision.LightsOn;
 import org.usfirst.frc.team3218.robot.commands.vision.NewTapeTracking;
 import org.usfirst.frc.team3218.robot.commands.vision.TapeTracking;
@@ -77,7 +77,7 @@ public class OI {
 		bongoRightBig.whenPressed(new BongoClimbStart());
 		bongoRightSmall.whenPressed(new BongoClimbStop());
 
-		button1.whileHeld(new I2CPixy());
+		button1.whileHeld(new Pixy());
 		button1.whileHeld(new GearTracking());
 
 	//	button2.whileHeld(new I2CPixy());

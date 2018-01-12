@@ -9,11 +9,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /**
  *
  */
-public class I2CPixy extends Command {
+public class Pixy extends Command {
 
 	public static final int MAX_SIGNATURES = 3; //TODO: make constants final
 	public static final int MAX_OBJECTS = 4;
 	public static final int SAMPLE_COUNT = 10;
+	public static final float SMOOTHING_FACTOR=0.5f;//figure out the best number for this
 	int maxBytes = 14 * MAX_OBJECTS + 2;
 	
 	char currentChecksum;
@@ -32,7 +33,7 @@ public class I2CPixy extends Command {
 	Blob blob = new Blob();
 	public Blob[] blobArray = new Blob[MAX_SIGNATURES];
 	
-    public I2CPixy() {
+    public Pixy() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
     	requires(Robot.vision);
@@ -104,7 +105,7 @@ public class I2CPixy extends Command {
     					calculateAverage(currentX, currentY, currentWidth, currentHeight, blobArray[currentSig]);
     					
     				}//checksum if close				
-    			}//check for object and succesful parse if close
+    			}//check for object and successful parse if close
     		}//for loop that segments object data close
     	}//if that checks for object in data close
     }//if the array has any data check close
@@ -119,28 +120,18 @@ public class I2CPixy extends Command {
 	 */
 	public void calculateAverage(char X, char Y, char Width, char Height, Blob blob) 
 	{
-		blob.lastIndex = ((blob.lastIndex+1) >= I2CPixy.SAMPLE_COUNT) ? 0 : blob.lastIndex + 1;
-		SmartDashboard.putNumber("lastIndex",blob.lastIndex);
-		//x position average
-		blob.averageX += (float)X/I2CPixy.SAMPLE_COUNT;
-		blob.averageX -= (float)blob.xSamples[blob.lastIndex]/I2CPixy.SAMPLE_COUNT;
-		blob.xSamples[blob.lastIndex] = X;
-	
-		//y position average
-		blob.averageY += (float)Y/I2CPixy.SAMPLE_COUNT;
-		blob.averageY -= (float)blob.ySamples[blob.lastIndex]/I2CPixy.SAMPLE_COUNT;
-		blob.ySamples[blob.lastIndex] = Y;
-		
-		//height average
-		blob.averageHeight += (float)Height/I2CPixy.SAMPLE_COUNT;
-		blob.averageHeight -= (float)blob.heightSamples[blob.lastIndex]/I2CPixy.SAMPLE_COUNT;
-		blob.heightSamples[blob.lastIndex] = Height;
-		
-		//width average
-		blob.averageWidth += (float)Width/I2CPixy.SAMPLE_COUNT;
-		blob.averageWidth -= (float)blob.widthSamples[blob.lastIndex]/I2CPixy.SAMPLE_COUNT;
-		blob.widthSamples[blob.lastIndex] = Width;
-		blob.wasUpdated = true;		
+		if(blob.wasUpdated)
+		{
+			blob.averageHeight = (SMOOTHING_FACTOR*(float)Height*(1-SMOOTHING_FACTOR)*blob.averageHeight-1);
+			blob.averageWidth = (SMOOTHING_FACTOR*(float)Height*(1-SMOOTHING_FACTOR)*blob.averageWidth-1);
+			blob.averageX = (SMOOTHING_FACTOR*(float)Height*(1-SMOOTHING_FACTOR)*blob.averageX-1);
+			blob.averageY = (SMOOTHING_FACTOR*(float)Height*(1-SMOOTHING_FACTOR)*blob.averageY-1);	
+		} else {
+			blob.averageHeight = Height;
+			blob.averageWidth = Width;
+			blob.averageX = X;
+			blob.averageY = Y;
+		}
 	}
     private char littleEndianToBigEndian(byte one, byte two)
     {
