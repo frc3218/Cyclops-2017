@@ -3,6 +3,7 @@ package org.usfirst.frc.team3218.robot.commands.vision;
 import org.usfirst.frc.team3218.robot.Robot;
 import org.usfirst.frc.team3218.robot.subsystems.Blob;
 
+import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -14,9 +15,9 @@ public class Pixy extends Command {
 	public static final int MAX_SIGNATURES = 3; //TODO: make constants final
 	public static final int MAX_OBJECTS = 4;
 	public static final int SAMPLE_COUNT = 10;
-	public static final float SMOOTHING_FACTOR=0.5f;//figure out the best number for this
+	float smoothingFactor=0.5f;//figure out the best number for this
 	int maxBytes = 14 * MAX_OBJECTS + 2;
-	
+	public I2C pixyi2c = new I2C(I2C.Port.kOnboard, 0x54);
 	char currentChecksum;
 	char currentSig;
 	char currentX;
@@ -49,7 +50,7 @@ public class Pixy extends Command {
     protected void execute() {
     	
     	byte[] pixyValues = new byte[maxBytes];
-    	Robot.vision.pixyi2c.readOnly(pixyValues, maxBytes);
+    	pixyi2c.readOnly(pixyValues, maxBytes);
 	
 	// set was updated array to false.
     	for(int i = 0; i<Robot.vision.wasUpdated.length; i++)  
@@ -122,16 +123,22 @@ public class Pixy extends Command {
 	{
 		if(blob.wasUpdated)
 		{
-			blob.averageHeight = (SMOOTHING_FACTOR*(float)Height*(1-SMOOTHING_FACTOR)*blob.averageHeight-1);
-			blob.averageWidth = (SMOOTHING_FACTOR*(float)Height*(1-SMOOTHING_FACTOR)*blob.averageWidth-1);
-			blob.averageX = (SMOOTHING_FACTOR*(float)Height*(1-SMOOTHING_FACTOR)*blob.averageX-1);
-			blob.averageY = (SMOOTHING_FACTOR*(float)Height*(1-SMOOTHING_FACTOR)*blob.averageY-1);	
+			smoothingFactor = (float) SmartDashboard.getNumber("smoothness", 0.5);
+			blob.averageHeight = (smoothingFactor*(float)Height*(1-smoothingFactor)*blob.averageHeight-1);
+			blob.averageWidth = (smoothingFactor*(float)Height*(1-smoothingFactor)*blob.averageWidth-1);
+			blob.averageX = (smoothingFactor*(float)Height*(1-smoothingFactor)*blob.averageX-1);
+			blob.averageY = (smoothingFactor*(float)Height*(1-smoothingFactor)*blob.averageY-1);	
 		} else {
 			blob.averageHeight = Height;
 			blob.averageWidth = Width;
 			blob.averageX = X;
 			blob.averageY = Y;
 		}
+	}
+	public void ChangeBrightness(byte Brightness)
+	{
+		byte[] lightnessArr = new byte[] {(byte) 0xFE, 0x00, Brightness};
+		pixyi2c.writeBulk(lightnessArr);
 	}
     private char littleEndianToBigEndian(byte one, byte two)
     {
